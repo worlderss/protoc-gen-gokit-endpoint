@@ -11,6 +11,7 @@ func generateClient(file *protogen.GeneratedFile, service *protogen.Service) {
 	file.P("\tconn *grpc.ClientConn")
 	file.P("\tlogger log.Logger")
 	file.P("\ttracer stdopentracing.Tracer")
+	file.P("\ttp trace.TracerProvider")
 	for _, method := range service.Methods {
 		if method.Desc.IsStreamingServer() || method.Desc.IsStreamingClient() {
 			continue
