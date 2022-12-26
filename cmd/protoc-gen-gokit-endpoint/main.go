@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/types/pluginpb"
 )
@@ -132,6 +133,7 @@ func generateServer(file *protogen.GeneratedFile, service *protogen.Service) {
 	generateWithMiddlewares(file, service)
 	generateWithTracing(file, service)
 	generateBuild(file, service)
+	generateRegisterService(file, service)
 
 	for _, method := range service.Methods {
 		if method.Desc.IsStreamingServer() || method.Desc.IsStreamingClient() {
@@ -166,6 +168,12 @@ func generateBuild(file *protogen.GeneratedFile, service *protogen.Service) {
 		}
 		file.P(fmt.Sprintf("\ts.build%s()", method.GoName))
 	}
+	file.P("}")
+}
+
+func generateRegisterService(file *protogen.GeneratedFile, service *protogen.Service) {
+	file.P(fmt.Sprintf("func (s *%s) RegisterService(server *grpc.Server) {", service.GoName))
+	file.P(fmt.Sprintf("\tRegister%sServer(server, s)", service.GoName))
 	file.P("}")
 }
 
