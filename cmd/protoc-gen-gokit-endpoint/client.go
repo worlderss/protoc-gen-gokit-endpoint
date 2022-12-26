@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
@@ -28,6 +29,7 @@ func generateNewClient(file *protogen.GeneratedFile, service *protogen.Service) 
 	file.P("\t}")
 	file.P("}")
 	generateClientWithTracer(file, service)
+	generateClientWithTracerProvider(file, service)
 	generateClientBuild(file, service)
 	generateMethodImpl(file, service)
 }
@@ -55,6 +57,9 @@ func generateClientMethodBuild(file *protogen.GeneratedFile, service *protogen.S
 	file.P("\toptions := []grpctransport.ClientOption{}")
 	file.P("\tif client.tracer != nil {")
 	file.P("\t\toptions = append(options, grpctransport.ClientBefore(opentracing.ContextToGRPC(client.tracer, client.logger)))")
+	file.P("\t}")
+	file.P("\tif client.tp != nil {")
+	file.P("\t\toptions = append(options, grpctransport.ClientBefore(tracing.ContextToGRPC(client.tp, client.logger)))")
 	file.P("\t}")
 	file.P("\tendpoint := grpctransport.NewClient(")
 	file.P("\t\tclient.conn,")
@@ -89,5 +94,12 @@ func generateMethodImpl(file *protogen.GeneratedFile, service *protogen.Service)
 func generateClientWithTracer(file *protogen.GeneratedFile, service *protogen.Service) {
 	file.P(fmt.Sprintf("func (client *%sGrpcClient) WithTracing(tracer stdopentracing.Tracer) {", service.GoName))
 	file.P("\tclient.tracer = tracer")
+	file.P("}")
+}
+
+func generateClientWithTracerProvider(file *protogen.GeneratedFile, service *protogen.Service) {
+	file.P(fmt.Sprintf("func (client *%sGrpcClient) WithTracerProvider(tp trace.TracerProvider) *%sGrpcClient {", service.GoName, service.GoName))
+	file.P("\tclient.tp = tp")
+	file.P("\treturn client")
 	file.P("}")
 }

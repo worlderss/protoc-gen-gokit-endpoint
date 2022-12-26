@@ -10,12 +10,14 @@ import (
 
 var withClient *bool
 var withServer *bool
+var withOTEL *bool
 
 // main is the entry point for the application.
 func main() {
 	var flags flag.FlagSet
 	withServer = flags.Bool("server", true, "enable server generation, default is true")
 	withClient = flags.Bool("client", false, "enable client generation, default is false")
+	withOTEL = flags.Bool("OpenTelemetry", false, "enable OpenTelemetry generation, default is false")
 	protogen.Options{
 		ParamFunc: flags.Set,
 	}.Run(func(gen *protogen.Plugin) error {
@@ -64,6 +66,12 @@ func writeImport(file *protogen.GeneratedFile) {
 	file.P("\tlog \"github.com/go-kit/kit/log\"")
 	file.P("\tstdopentracing \"github.com/opentracing/opentracing-go\"\n")
 	file.P("\topentracing \"github.com/go-kit/kit/tracing/opentracing\"\n")
+	file.P("\ttracing \"git.aimap.io/LBM/mock-demo/observability/tracing\"")
+	if *withOTEL {
+		file.P("\totelkit \"go.opentelemetry.io/contrib/instrumentation/github.com/go-kit/kit/otelkit\"")
+		file.P("\ttrace \"go.opentelemetry.io/otel/trace\"")
+
+	}
 	if *withClient {
 		file.P("\tgrpc \"google.golang.org/grpc\"")
 	}
@@ -191,7 +199,9 @@ func generateBuildMethod(file *protogen.GeneratedFile, service *protogen.Service
 	file.P(fmt.Sprintf("\tfor _, middleware := range s.middlewares {"))
 	file.P(fmt.Sprintf("\t\t%sEndpoint = middleware(%sEndpoint)", method.GoName, method.GoName))
 	file.P("\t}")
-
+	if *withOTEL {
+		file.P(fmt.Sprintf("\t%sEndpoint = otelkit.EndpointMiddleware(otelkit.WithOperation(\"%s\"))(%sEndpoint)", method.GoName, method.Desc.FullName(), method.GoName))
+	}
 	file.P("\tfor _, option := range s.options {")
 	file.P(fmt.Sprintf("\t\tops = append(ops, option(\"%s\"))", method.Desc.FullName()))
 	file.P("\t}")
