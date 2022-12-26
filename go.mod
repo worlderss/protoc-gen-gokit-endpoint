@@ -1,4 +1,4 @@
-module github.com/worldress/protoc-gen-gokit-endpoint
+module github.com/worlderss/protoc-gen-gokit-endpoint
 
 go 1.18
 
