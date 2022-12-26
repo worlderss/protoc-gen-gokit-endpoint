@@ -1,8 +1,7 @@
-module github.com/wwbweibo/protoc-gen-gokit-endpoint
+module github.com/worldress/protoc-gen-gokit-endpoint
 
-go 1.17
+go 1.18
 
-require (
-	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa
-	google.golang.org/protobuf v1.27.1
-)
+require google.golang.org/protobuf v1.27.1
+
+require golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
