@@ -200,7 +200,7 @@ func generateBuildMethod(file *protogen.GeneratedFile, service *protogen.Service
 	file.P(fmt.Sprintf("\t\t%sEndpoint = middleware(%sEndpoint)", method.GoName, method.GoName))
 	file.P("\t}")
 	if *withOTEL {
-		file.P(fmt.Sprintf("\t%sEndpoint = otelkit.EndpointMiddleware(otelkit.WithOperation(\"%s\"))(%sEndpoint)", method.GoName, method.Desc.FullName(), method.GoName))
+		file.P(fmt.Sprintf("\t%sEndpoint = tracing.EndpointMiddleware(\"%s\")(%sEndpoint)", method.GoName, method.Desc.FullName(), method.GoName))
 	}
 	file.P("\tfor _, option := range s.options {")
 	file.P(fmt.Sprintf("\t\tops = append(ops, option(\"%s\"))", method.Desc.FullName()))
