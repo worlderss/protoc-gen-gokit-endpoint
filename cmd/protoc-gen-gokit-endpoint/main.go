@@ -68,9 +68,7 @@ func writeImport(file *protogen.GeneratedFile) {
 	file.P("\topentracing \"github.com/go-kit/kit/tracing/opentracing\"\n")
 	file.P("\ttracing \"git.aimap.io/LBM/mock-demo/observability/tracing\"")
 	if *withOTEL {
-		file.P("\totelkit \"go.opentelemetry.io/contrib/instrumentation/github.com/go-kit/kit/otelkit\"")
 		file.P("\ttrace \"go.opentelemetry.io/otel/trace\"")
-
 	}
 	if *withClient {
 		file.P("\tgrpc \"google.golang.org/grpc\"")
