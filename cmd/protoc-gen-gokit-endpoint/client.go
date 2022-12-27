@@ -72,6 +72,9 @@ func generateClientMethodBuild(file *protogen.GeneratedFile, service *protogen.S
 	file.P("\tif client.tracer != nil {")
 	file.P("\t\tendpoint = opentracing.TraceClient(client.tracer, \"" + method.GoName + "\")(endpoint)")
 	file.P("\t}")
+	file.P("\tif client.tp != nil {")
+	file.P("\t\tendpoint = tracing.TraceClient(client.tp, \"" + method.GoName + "\")(endpoint)")
+	file.P("\t}")
 	file.P("\treturn endpoint")
 	file.P("}")
 }
