@@ -119,6 +119,7 @@ func generateServer(file *protogen.GeneratedFile, service *protogen.Service) {
 	file.P("\toptions []func(string) grpctransport.ServerOption")
 	file.P("\tmiddlewares []func(endpoint.Endpoint) endpoint.Endpoint")
 	file.P("\ttracer stdopentracing.Tracer")
+	file.P("\ttp trace.TracerProvider")
 	file.P("\tlogger log.Logger")
 	for _, method := range service.Methods {
 		if method.Desc.IsStreamingServer() || method.Desc.IsStreamingClient() {
@@ -138,6 +139,7 @@ func generateServer(file *protogen.GeneratedFile, service *protogen.Service) {
 	generateWithOptions(file, service)
 	generateWithMiddlewares(file, service)
 	generateWithTracing(file, service)
+	generateServerWithTracerProvider(file, service)
 	generateBuild(file, service)
 	generateRegisterService(file, service)
 
@@ -198,6 +200,7 @@ func generateBuildMethod(file *protogen.GeneratedFile, service *protogen.Service
 	file.P(fmt.Sprintf("\t\t%sEndpoint = middleware(%sEndpoint)", method.GoName, method.GoName))
 	file.P("\t}")
 	if *withOTEL {
+		file.P(fmt.Sprintf("\tops = append(ops, grpctransport.ServerBefore(tracing.GRPCToContext(s.tp, \"%s\", s.logger)))", method.Desc.FullName()))
 		file.P(fmt.Sprintf("\t%sEndpoint = tracing.EndpointMiddleware(\"%s\")(%sEndpoint)", method.GoName, method.Desc.FullName(), method.GoName))
 	}
 	file.P("\tfor _, option := range s.options {")
@@ -228,6 +231,12 @@ func generateWithMiddlewares(file *protogen.GeneratedFile, service *protogen.Ser
 func generateWithTracing(file *protogen.GeneratedFile, service *protogen.Service) {
 	file.P(fmt.Sprintf("func (s *%s) WithTracing(tracer stdopentracing.Tracer) {", service.GoName))
 	file.P("\ts.tracer = tracer")
+	file.P("}")
+}
+
+func generateServerWithTracerProvider(file *protogen.GeneratedFile, service *protogen.Service) {
+	file.P(fmt.Sprintf("func (s *%s) WithTracerProvider(tp trace.TracerProvider) {", service.GoName))
+	file.P("\ts.tp = tp")
 	file.P("}")
 }
 
